@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 // tell the server to look in the public folder
 // for any routes or static files such as html, images etc...
 app.use(express.static('./public'));
-app.use(cors);
+app.use(cors());
 
 // Weather. Return data located in data/darksky.json.
 app.get('/weather', (request, response) =>{
@@ -31,21 +31,30 @@ app.get('/weather', (request, response) =>{
 app.get('/location', (request,response) =>{
   console.log('do we get here?');
   try{
-    let locationData = require('./data/geo.json');
-    let loc = new Location (locationData.results);
-    response.send(loc);
+    // let locationData = require('./data/geo.json');
+    // let loc = new Location (locationData.results);
+    searchLatLong(request.query.data)
+      .then(loc => response.send(loc));
   } catch(error){
     console.log('There was an error getting the location!');
     response.status(500).send('No location data here');
   }
 });
 
-function Location(query) {
+function Location(query, data) {
   this.data = query;
-  this.search_query = query[0].address_components[0].long_name;
-  this.name = query[0].formatted_address;
-  this.latitude = query[0].geometry.location.lat;
-  this.longitude = query[0].geometry.location.lng;
+  this.search_query = data.body.results[0].address_components[0].long_name;
+  this.name = data.body.results[0].formatted_address;
+  this.latitude = data.body.results[0].geometry.location.lat;
+  this.longitude = data.body.results[0].geometry.location.lng;
+}
+
+function searchLatLong(query){
+  const url =`https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
+  return superagent.get(url)
+    .then(res => {
+      return new Location(query, res);
+    });
 }
 
 // TODO: Change to pull weather day objects.
