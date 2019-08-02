@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const superagent = require('superagent');
 const app = express();
+let targetLocation = [];
 
 // get the specified port from our environmental variables
 // if there is nothing specified, use port 3000
@@ -15,19 +16,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static('./public'));
 app.use(cors());
 
-// Weather. Return data located in data/darksky.json.
-app.get('/weather', (request, response) =>{
-  try{
-    let weatherData = require('./data/darksky.json');
-    let weather = weatherData.daily.data.map((day) => new Weather(day));
-    response.send(weather);
-  } catch(error){
-    console.log(`There was an error getting the weather: ${error}`);
-    response.status(500).send('No weather here');
-  }
-});
-
-// located in our data folder
+// pull location data from google maps api
 app.get('/location', (request,response) =>{
   try{
     // let locationData = require('./data/geo.json');
@@ -40,6 +29,31 @@ app.get('/location', (request,response) =>{
   }
 });
 
+// Weather. pull from darksky api
+app.get('/weather', (request, response) =>{
+  try{
+    // let weatherData = require('./data/darksky.json');
+    // let weather = weatherData.daily.data.map((day) => new Weather(day));
+    searchWeather()
+      .then(weather => response.send(weather));
+  } catch(error){
+    console.log(`There was an error getting the weather: ${error}`);
+    response.status(500).send('No weather here');
+  }
+});
+
+app.get('/events', (request, response) =>{
+  try{
+    searchEvents()
+    .then(events => response.send(events));
+  } catch(error){
+    console.log('There was an error fetching events');
+    response.status(500).send('Where are the events?');
+  }
+});
+
+
+//location constructor
 function Location(query, data) {
   this.search_query = query;
   // this.data = data;
@@ -48,20 +62,46 @@ function Location(query, data) {
   this.longitude = data.body.results[0].geometry.location.lng;
 }
 
-function searchLatLong(query){
-  const url =`https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
-  return superagent.get(url)
-    .then(res => {
-      return new Location(query, res);
-    });
-}
-
-// TODO: Change to pull weather day objects.
+// weather constructor
 function Weather(query) {
   // this.data = query;
   this.forecast = query.summary;
   this.time = new Date(query.time*1000).toDateString();
 }
+
+//TODO
+function Event(query) {
+  this.link = query;
+  this.name = query;
+  this.event_date = query;
+  this.summary = query;
+}
+
+function searchLatLong(query){
+  const url =`https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
+  return superagent.get(url)
+    .then(res => {
+      targetLocation = new Location(query, res)
+      return targetLocation;
+    });
+}
+
+function searchWeather(){
+  const url =`https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${targetLocation.latitude},${targetLocation.longitude}`;
+  return superagent.get(url)
+    .then(res => {
+      return res.body.daily.data.map((day) => new Weather(day));
+    });
+}
+
+function searchEvents(){
+  const url = `https://www.eventbrite.com/oauth/authorize?response_type=code&client_id=${process.env.EVENT_API_KEY}`;
+  return superagent.get(url)
+    .then(res => {
+      return res.map((event) => new Event));
+    });
+}
+
 
 //when we connect to the port, tell us what port we are listening too
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
