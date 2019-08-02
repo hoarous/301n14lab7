@@ -29,7 +29,6 @@ app.get('/weather', (request, response) =>{
 
 // located in our data folder
 app.get('/location', (request,response) =>{
-  console.log('do we get here?');
   try{
     // let locationData = require('./data/geo.json');
     // let loc = new Location (locationData.results);
@@ -42,8 +41,8 @@ app.get('/location', (request,response) =>{
 });
 
 function Location(query, data) {
-  this.data = query;
-  this.search_query = data.body.results[0].address_components[0].long_name;
+  this.search_query = query;
+  // this.data = data;
   this.name = data.body.results[0].formatted_address;
   this.latitude = data.body.results[0].geometry.location.lat;
   this.longitude = data.body.results[0].geometry.location.lng;
