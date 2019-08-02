@@ -1,6 +1,8 @@
 # Project Name
 
-**Author**: Aaron Imbrock, Mae-mae Zhou
+**Author**:
+*Lab 6:* Aaron Imbrock, Mae-mae Zhou
+*Lab 7:* Mae-mae Zhou, Morgan Shaw
 **Version**: 1.0.0
 
 ## Overview
