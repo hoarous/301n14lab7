@@ -71,10 +71,11 @@ function Weather(query) {
 
 //TODO
 function Event(query) {
-  this.link = query;
-  this.name = query;
-  this.event_date = query;
-  this.summary = query;
+  this.data = query;
+  // this.link = query;
+  // this.name = query;
+  // this.event_date = query;
+  // this.summary = query;
 }
 
 function searchLatLong(query){
@@ -95,10 +96,12 @@ function searchWeather(){
 }
 
 function searchEvents(){
-  const url = `https://www.eventbrite.com/oauth/authorize?response_type=code&client_id=${process.env.EVENT_API_KEY}`;
+  const url = `https://www.eventbriteapi.com/v3/events/search?location.address=${targetLocation.name}&location.within=10km&expand=venue`;
   return superagent.get(url)
     .then(res => {
-      return res.map((event) => new Event));
+      let events = res.map((event) => new Event(event));
+      console.log(events[0]);
+      return events;
     });
 }
 
