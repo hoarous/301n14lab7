@@ -3,7 +3,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const superagent = require('superagent');
+//const superagent = require('superagent');
 const app = express();
 
 // get the specified port from our environmental variables
@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 // tell the server to look in the public folder
 // for any routes or static files such as html, images etc...
 app.use(express.static('./public'));
-app.use(cors);
+app.use(cors());
 
 // Weather. Return data located in data/darksky.json.
 app.get('/weather', (request, response) =>{
