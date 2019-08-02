@@ -19,10 +19,7 @@ app.use(cors);
 app.get('/weather', (request, response) =>{
   try{
     let weatherData = require('./data/darksky.json');
-    let weather = [];//new Weather(weatherData);
-    weatherData.daily.data.forEach((day) =>{
-      weather.push(new Weather(day));
-    });
+    let weather = weatherData.daily.data.map((day) => new Weather(day));
     response.send(weather);
   } catch(error){
     console.log(`There was an error getting the weather: ${error}`);
@@ -32,6 +29,7 @@ app.get('/weather', (request, response) =>{
 
 // located in our data folder
 app.get('/location', (request,response) =>{
+  console.log('do we get here?');
   try{
     let locationData = require('./data/geo.json');
     let loc = new Location (locationData.results);
